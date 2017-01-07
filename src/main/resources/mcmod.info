@@ -1,0 +1,16 @@
+{
+  "modListVersion": 2,
+  "modList": [{
+    "modid": "jukediscord",
+    "name": "JukeDiscord",
+    "description": "A simple mod",
+    "url": "",
+    "updateUrl": "",
+    "authorList": [ "pendo324" ],
+    "credits": "Authored by pendo324",
+    "requiredMods": [ "Forge" ],
+    "dependencies": [],
+    "dependants": [],
+    "useDependencyInformation": false
+  }]
+}

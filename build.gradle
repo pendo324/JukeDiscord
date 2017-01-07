@@ -1,0 +1,126 @@
+buildscript {
+    repositories {
+        jcenter()
+        maven {
+            name "forge"
+            url "http://files.minecraftforge.net/maven"
+        }
+    }
+    dependencies {
+        classpath "net.minecraftforge.gradle:ForgeGradle:2.2-SNAPSHOT"
+        classpath group: "org.jetbrains.kotlin", name: "kotlin-gradle-plugin", version: kotlin_version
+    }
+}
+
+plugins {
+    id "com.matthewprenger.cursegradle" version "1.0.8"
+}
+
+apply plugin: "net.minecraftforge.gradle.forge"
+apply plugin: "kotlin"
+
+version = "1.0"
+group = "me.flyinglawnmower.jd"
+archivesBaseName = "jukediscord"
+
+minecraft {
+    version = minecraft_version + "-" + forge_version
+    runDir = "run"
+    mappings = "snapshot_20161111"
+}
+
+repositories {
+    jcenter()
+    maven {
+        url "http://jcenter.bintray.com"
+    }
+    maven {
+        url "https://jitpack.io"
+    }
+    maven {
+        url "http://mvn.rx14.co.uk/shadowfacts/"
+    }
+}
+
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
+
+processResources {
+    inputs.property "version", project.version
+    inputs.property "mcversion", project.minecraft.version
+
+    from(sourceSets.main.resources.srcDirs) {
+        include "mcmod.info"
+
+        expand "version": project.version, "mcversion": project.minecraft.version
+    }
+
+    from(sourceSets.main.resources.srcDirs) {
+        exclude "mcmod.info"
+    }
+}
+
+configurations {
+    shade
+    compile.extendsFrom shade
+}
+
+dependencies {
+    deobfCompile group: "net.shadowfacts", name: "Forgelin", version: "1.2.0"
+    shade "com.github.austinv11:Discord4j:2.7.0"
+    shade "org.jetbrains.kotlin:kotlin-runtime:${kotlin_version}"
+    shade "org.jetbrains.kotlin:kotlin-stdlib:${kotlin_version}"
+}
+
+jar {
+    configurations.shade.each { dep ->
+        from(project.zipTree(dep)) {
+            exclude "META-INF", "META-INF/**", "**/about.html", "*/about.html", "about.html"
+        }
+    }
+}
+
+reobf {
+    jar {
+        extraLines += [ "PK: kotlin me/kotlin" ]
+    }
+}
+
+tasl gitRelease {
+    doLast {
+        println("Doing github release tasks")
+    }
+}
+
+task fullRelease {
+    doLast {
+        println("Pushing to curseforge and doing github release tasks")
+    }
+}
+
+task changeLog(type: Exec) {
+    commandLine "github_changelog_generator"
+}
+
+task addReleases(type: Exec) {
+    commandLine "chandler", "push"
+}
+
+changeLog.dependsOn gitRelease
+addReleases.dependsOn changeLog
+
+fullRelease.dependsOn curseforge
+changeLog.dependsOn fullRelease
+addReleases.dependsOn changeLog
+
+curseforge {
+    println System.getenv("curseForgeApiKey")
+    apiKey = System.getenv("curseForgeApiKey")
+    project {
+        id = "256691"
+        mainArtifact jar
+        changelog = "initial release" // A file can also be set using: changelog = file('CHANGELOG.md')
+        releaseType = "beta"
+        addGameVersion '1.10.2'
+    }
+}
