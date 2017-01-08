@@ -86,7 +86,7 @@ reobf {
     }
 }
 
-tasl gitRelease {
+task gitRelease {
     doLast {
         println("Doing github release tasks")
     }
@@ -106,13 +106,6 @@ task addReleases(type: Exec) {
     commandLine "chandler", "push"
 }
 
-changeLog.dependsOn gitRelease
-addReleases.dependsOn changeLog
-
-fullRelease.dependsOn curseforge
-changeLog.dependsOn fullRelease
-addReleases.dependsOn changeLog
-
 curseforge {
     println System.getenv("curseForgeApiKey")
     apiKey = System.getenv("curseForgeApiKey")
@@ -124,3 +117,10 @@ curseforge {
         addGameVersion '1.10.2'
     }
 }
+
+changeLog.dependsOn gitRelease
+addReleases.dependsOn changeLog
+
+/*fullRelease.dependsOn curseforge
+changeLog.dependsOn fullRelease
+addReleases.dependsOn changeLog*/
